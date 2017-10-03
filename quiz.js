@@ -36,7 +36,8 @@ const quizQuestions = [
 const STORE = {
   view: 'intro',
   questions: [{}, {}, {}, {}, {}],
-  currentQuestion: 0,
+  lastAnswerCorrect: null,
+  currentQuestion: 4,
   correctResponses: 0,
 };
 
@@ -59,8 +60,6 @@ function selectRandomQuestions() {
   for (let i = 0; i < questionArr.length; i++) {
     STORE.questions[i] = (quizQuestions[questionArr[i]]);
   }
-
-  STORE.view = 'questions';
 
   render();
 }
@@ -110,9 +109,7 @@ function renderQuestions() {
   // }
 
 
-  console.log(STORE.questions);
-
-  $('.js-container').html(`
+  $('.js-container').html(`<form>
     <p>${STORE.currentQuestion+1.+')'} ${STORE.questions[STORE.currentQuestion].question}</p>
     <label class='answer'>
     <input val="0" type="radio" name="choice" required>
@@ -138,78 +135,64 @@ function renderQuestions() {
     </label>
     <br>
       
-    <button type="submit" id="submit" class="js-question-submit" data-popup-open="popup-feedback">Submit</button>`);
+    <button type="submit" id="submit" class="js-question-submit" data-popup-open="popup-feedback">Submit</button>
+    </form><br>`);
     
   
 }
 
-function handeleSubmit() {
-  $('.js-container').on('click', '.js-question-submit', function(event) {
+function handleSubmit() {
+  $('.js-container').on('submit', 'form', function(event) {
+    event.preventDefault();
     const userChoice = parseInt($('input[name=choice]:checked').attr('val'));
-    console.log(userChoice);
-    console.log(typeof(userChoice));
-    //Call this fucntion to check if the result is correct, THIS IS WHERE WE LEFT OFF YESTERDAY
     checkAnswer(userChoice);
   });
   
 }
 
 function checkAnswer(choice) {
+  console.log(STORE.currentQuestion);
 
   let correctAnswerObject = STORE.questions[STORE.currentQuestion];
-  console.log(correctAnswerObject);
+
   let correctAnswer = correctAnswerObject.correct;
-  console.log(correctAnswer);
-  let feedback = $('.popup-hidden');
+
 
   if (choice === correctAnswer) {
 
     STORE.correctResponses++;
-    STORE.currentQuestion++;
-    $('.popup-hidden').removeClass('hide');
-    feedback.find('h2').text('Correct!');
-    feedback.find('img').attr('src','https://media.giphy.com/media/3otPoumTG9VHMQlIPu/giphy.gif');
+    STORE.lastAnswerCorrect = true;
     
   } else if ($('input[name=choice]:checked').length === 0) {
-    
-    $('.popup-hidden').removeClass('hide');
-    feedback.find('h2').text('MAKE A DECISION');
-    feedback.find('img').attr('src', 'https://media.giphy.com/media/OmAdpbVnAAWJO/giphy.gif');
+    console.log('Placeholder');
 
   } else if (choice !== correctAnswer) {
-    
-    STORE.currentQuestion++; 
-    $('.popup-hidden').removeClass('hide');
-    feedback.find('h2').text('Sorry, that wasn\'t correct.');
-    feedback.find('img').attr('src', 'https://media.giphy.com/media/sgfauo9CqBcAw/giphy.gif');
+    STORE.lastAnswerCorrect = false;
   }
-  toggleX();
-  
-  if (STORE.currentQuestion === STORE.questions.length) {
+
+  if (STORE.currentQuestion === 4) {
     STORE.view === 'results';
-    renderResults();
-  } else {
-    renderQuestions();
+    console.log('final question!!!!!');
   }
+
+  showFeedback();
+  STORE.currentQuestion++;
+  
 }
 
-function handleAnswerFeedback() {
-  
+function showFeedback() {
 
-  $('#submit-answer').on('click', function (e) {
-    let targetPopupClass = $(this).attr('data-popup-open');
-    $('[data-popup="' + targetPopupClass + '"]').fadeIn(250);
-    e.preventDefault();
-  });
-  
-  $('#close-feedback-modal').on('click', function (e) {
-    let targetPopupClass = $(this).attr('data-popup-close');
-    $('[data-popup="' + targetPopupClass + '"]').fadeOut(250);
+  if (STORE.lastAnswerCorrect) {
+    $('.js-container form').append('Correct!');
+  }
+  else if (!STORE.lastAnswerCorrect) {
+    $('.js-container form').append('Sorry, that\'s incorrect.')
+  }
 
-    e.preventDefault();
-  });
+  $('.js-container').append('<button type="button" class="continue-button">Continue</button>');
+
+  $('.js-container').on('click', '.continue-button', render);
 }
-
      
 function renderResults() {
   $('.js-container').children().remove();
@@ -239,10 +222,8 @@ function toggleX() {
 
 function main() { 
   render();
-  handeleSubmit();
+  handleSubmit();
   handleResetQuiz();
-  handleAnswerFeedback();
-  
 }
 
 $(main);
