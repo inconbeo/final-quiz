@@ -213,7 +213,7 @@ function handleAnswerFeedback() {
 function renderResults() {
   $('.js-container').children().remove();
   $('.js-container').html(`<h2 class="result">Your score: ${STORE.correctResponses} out of ${STORE.questions.length} right</h2>
-  <button class="start-over" id="start-over">Start Quizz Over</button>`);
+  <button class="start-over" id="start-over">Start Quiz Over</button>`);
    
 }
 
